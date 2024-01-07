@@ -11,4 +11,4 @@ compile:
 ./main <image_path>
 ```
 
-![Demo]("./screenshot.png")
+![Demo](./screenshot.png)
