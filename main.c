@@ -4,20 +4,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
 
-// color experiment
-// int main2() {
-//   for (int i = 0; i < 11; ++i) {
-//     for (int j = 0; j < 10; ++j) {
-//       int n = 10 * i + j;
-//       if (n > 108)
-//         break;
-//       printf("\033[%dm %3d\033[m", n, n);
-//     }
-//
-//     printf("\n");
-//   }
-//   return 0;
-// }
 int rgb256[][3] = {
     {0, 0, 0},       {128, 0, 0},     {0, 128, 0},     {128, 128, 0},
     {0, 0, 128},     {128, 0, 128},   {0, 128, 128},   {192, 192, 192},
@@ -213,7 +199,7 @@ void rgb_to_hsl(int r, int g, int b, int *h, int *s, int *l) {
   else if (cmax == b01)
     hf = 60.0f * ((r01 - g01) / delta + 4);
   else
-    assert(0 && "not found");
+    assert(0 && "should not be reached");
 
   float lf = (cmax + cmin) / 2;
   float sf = 0;
@@ -265,3 +251,18 @@ int main(int argc, char **argv) {
   stbi_image_free(pixels);
   return 0;
 }
+
+// color experiment
+// int main2() {
+//   for (int i = 0; i < 11; ++i) {
+//     for (int j = 0; j < 10; ++j) {
+//       int n = 10 * i + j;
+//       if (n > 108)
+//         break;
+//       printf("\033[%dm %3d\033[m", n, n);
+//     }
+//
+//     printf("\n");
+//   }
+//   return 0;
+// }
