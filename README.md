@@ -8,7 +8,7 @@ compile:
 #### Usage
 
 ```console
-./main <image_path>
+./catimg <image_path>
 ```
 
 ![Demo](./screenshot.png)

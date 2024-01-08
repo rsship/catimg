@@ -1,5 +1,4 @@
 #!/bin/sh
 
 set -xe
- 
-clang -o main main.c -lm
+clang -o catimg catimg.c -lm
