@@ -3,6 +3,8 @@
 #include <stdio.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize2.h"
 
 int rgb256[][3] = {
     {0, 0, 0},       {128, 0, 0},     {0, 128, 0},     {128, 128, 0},
@@ -224,8 +226,8 @@ char *shift_args(int *argc, char ***argv) {
 int main(int argc, char **argv) {
   assert(argc > 0);
   const char *program = shift_args(&argc, &argv);
-  const char *img_path = shift_args(&argc, &argv);
 
+  const char *img_path = shift_args(&argc, &argv);
   int width, height;
 
   uint32_t *pixels = (uint32_t *)stbi_load(img_path, &width, &height, NULL, 4);
@@ -235,9 +237,21 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      uint32_t pixel = pixels[y * width + x];
+  int resized_width = 64;
+  int resized_height = height * resized_width / width;
+
+  uint32_t *resized_pixels =
+      malloc(sizeof(uint32_t) * resized_width * resized_height);
+  assert(resized_pixels != NULL);
+
+  stbir_resize_uint8_linear(
+      (const unsigned char *)pixels, width, height, sizeof(uint32_t) * width,
+      (unsigned char *)resized_pixels, resized_width, resized_height,
+      sizeof(uint32_t) * resized_width, 4);
+
+  for (int y = 0; y < resized_height; ++y) {
+    for (int x = 0; x < resized_width; ++x) {
+      uint32_t pixel = resized_pixels[y * resized_width + x];
       int r = pixel & 0xFF;
       int g = (pixel >> 8) & 0xFF;
       int b = (pixel >> 16) & 0xFF;
@@ -247,7 +261,8 @@ int main(int argc, char **argv) {
     }
     printf("\e[0m\n");
   }
-  printf("\e[0m\n");
+
+  free(resized_pixels);
   stbi_image_free(pixels);
   return 0;
 }

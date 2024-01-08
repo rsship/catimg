@@ -2,4 +2,4 @@
 
 set -xe
  
-clang-17 -o main main.c -lm
+clang -o main main.c -lm
