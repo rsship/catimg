@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -223,31 +224,24 @@ char *shift_args(int *argc, char ***argv) {
   return result;
 }
 
-int main(int argc, char **argv) {
-  assert(argc > 0);
-  const char *program = shift_args(&argc, &argv);
+void usage() {
+  printf("   -w <WIDTH>\n");
+  printf("   <img_path>\n");
+  exit(1);
+}
 
-  const char *img_path = shift_args(&argc, &argv);
-  int width, height;
-
-  uint32_t *pixels = (uint32_t *)stbi_load(img_path, &width, &height, NULL, 4);
-
-  if (pixels == NULL) {
-    fprintf(stderr, "could not read the file %s\n", img_path);
-    exit(1);
-  }
-
-  int resized_width = 64;
-  int resized_height = height * resized_width / width;
+void pixel_print(int resized_width, int org_width, int org_height,
+                 uint32_t *pixels) {
+  int resized_height = org_height * resized_width / org_width;
 
   uint32_t *resized_pixels =
       malloc(sizeof(uint32_t) * resized_width * resized_height);
   assert(resized_pixels != NULL);
 
   stbir_resize_uint8_linear(
-      (const unsigned char *)pixels, width, height, sizeof(uint32_t) * width,
-      (unsigned char *)resized_pixels, resized_width, resized_height,
-      sizeof(uint32_t) * resized_width, 4);
+      (const unsigned char *)pixels, org_width, org_height,
+      sizeof(uint32_t) * org_width, (unsigned char *)resized_pixels,
+      resized_width, resized_height, sizeof(uint32_t) * resized_width, 4);
 
   for (int y = 0; y < resized_height; ++y) {
     for (int x = 0; x < resized_width; ++x) {
@@ -263,21 +257,37 @@ int main(int argc, char **argv) {
   }
 
   free(resized_pixels);
-  stbi_image_free(pixels);
-  return 0;
 }
 
-// color experiment
-// int main2() {
-//   for (int i = 0; i < 11; ++i) {
-//     for (int j = 0; j < 10; ++j) {
-//       int n = 10 * i + j;
-//       if (n > 108)
-//         break;
-//       printf("\033[%dm %3d\033[m", n, n);
-//     }
-//
-//     printf("\n");
-//   }
-//   return 0;
-// }
+int main(int argc, char **argv) {
+  assert(argc > 0);
+  const char *program = shift_args(&argc, &argv);
+  int resized_width;
+
+  while (argc > 0) {
+    const char *flag = shift_args(&argc, &argv);
+
+    if (strcmp(flag, "-w") == 0) {
+      if (argc <= 0) {
+        fprintf(stderr, "-w COULD NOT BE BELOW THAN 0");
+        usage();
+      }
+      resized_width = atoi(shift_args(&argc, &argv));
+    } else {
+      const char *img_path = flag;
+      int width, height;
+
+      uint32_t *pixels =
+          (uint32_t *)stbi_load(img_path, &width, &height, NULL, 4);
+
+      if (pixels == NULL) {
+        fprintf(stderr, "could not read the file %s\n", img_path);
+        usage();
+      }
+      pixel_print(resized_width, width, height, pixels);
+      stbi_image_free(pixels);
+    }
+  }
+
+  return 0;
+}
