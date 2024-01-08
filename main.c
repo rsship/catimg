@@ -8,7 +8,7 @@
 #include "stb_image_resize2.h"
 
 int rgb256[][3] = {
-    {0, 0, 0},       {128, 0, 0},     {0, 128, 0},     {128, 128, 0},
+    {0, 0, 0},       {128, 0, 0},     {0, 28, 0},      {128, 128, 0},
     {0, 0, 128},     {128, 0, 128},   {0, 128, 128},   {192, 192, 192},
     {128, 128, 128}, {255, 0, 0},     {0, 255, 0},     {255, 255, 0},
     {0, 0, 255},     {255, 0, 255},   {0, 255, 255},   {255, 255, 255},
@@ -230,6 +230,12 @@ void usage() {
   exit(1);
 }
 
+void add_alpha(int *r, int *g, int *b, int a) {
+  *r = *r * a / 255;
+  *g = *g * a / 255;
+  *b = *b * a / 255;
+}
+
 void pixel_print(int resized_width, int org_width, int org_height,
                  uint32_t *pixels) {
   int resized_height = org_height * resized_width / org_width;
@@ -238,10 +244,10 @@ void pixel_print(int resized_width, int org_width, int org_height,
       malloc(sizeof(uint32_t) * resized_width * resized_height);
   assert(resized_pixels != NULL);
 
-  stbir_resize_uint8_linear(
-      (const unsigned char *)pixels, org_width, org_height,
-      sizeof(uint32_t) * org_width, (unsigned char *)resized_pixels,
-      resized_width, resized_height, sizeof(uint32_t) * resized_width, 4);
+  stbir_resize_uint8_srgb((const unsigned char *)pixels, org_width, org_height,
+                          sizeof(uint32_t) * org_width,
+                          (unsigned char *)resized_pixels, resized_width,
+                          resized_height, sizeof(uint32_t) * resized_width, 4);
 
   for (int y = 0; y < resized_height; ++y) {
     for (int x = 0; x < resized_width; ++x) {
@@ -249,6 +255,8 @@ void pixel_print(int resized_width, int org_width, int org_height,
       int r = pixel & 0xFF;
       int g = (pixel >> 8) & 0xFF;
       int b = (pixel >> 16) & 0xFF;
+      int a = (pixel >> 24) & 0xFF;
+      add_alpha(&r, &g, &b, a);
       int h, s, l;
       rgb_to_hsl(r, g, b, &h, &s, &l);
       printf("\e[48;5;%dm  ", find_ansi_by_hsl(h, s, l));
